@@ -1,36 +1,59 @@
-name: CI Pipeline
+# This is a basic workflow to help you get started with Actions
 
-# on: [push, pull_request]
+name: My GitHub Actions Java Maven App Example
+
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Step 1 - Checkout main branch from GitHub 
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
+      # Runs a single command using the runners shell
+      - name: Step 2 - Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      
+      - name: Step 3 - Have GitHub Actions Build Maven Project
+        run: |
+          mvn -B package --file pom.xml
+          mkdir staging && cp target/*.jar staging
+          
+      - name: Step 4 - Set up a cache for Maven
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-    - name: Build with Maven
-      run: mvn clean install
+      - name: Step 5 - Persist workflow data as artificats
+        uses: actions/upload-artifact@v2
+        with:
+          name: github-actions-artifact
+          path: staging
 
-    - name: Upload to AWS S3
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        aws s3 cp target/my-app.jar s3://my-bucket/my-app.jar
+      - name: Step 6 - List the current directory
+        run: ls -a
 
-    - name: Copy to EC2
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        aws s3 cp s3://my-bucket/my-app.jar /tmp/my-app.jar
-        scp -i /path/to/key.pem /tmp/my-app.jar ec2-user@my-ec2-instance:/path/to/destination/
+      - name: Step 7 - What is in the target folder?
+        run: |
+          cd target
+          ls -a
+
+          
