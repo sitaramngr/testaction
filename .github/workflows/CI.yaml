@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: My GitHub Actions Java Maven App Example
+name: My GitHub Actions Java Maven CI
 
 # Controls when the workflow will run
 on:
@@ -11,7 +9,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
